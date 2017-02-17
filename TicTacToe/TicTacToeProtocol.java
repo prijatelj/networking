@@ -1,6 +1,7 @@
-/*
- * Derek S. Prijatelj
+/**
  * Network Assignment 2
+ * @author Derek S. Prijatelj
+ * Modified Knock Knock code by Oracle for TicTacToe
  */
 
 /*
@@ -40,56 +41,71 @@ import java.io.*;
 
 public class TicTacToeProtocol {
     private static final int WAITING = 0;
-    private static final int SENTKNOCKKNOCK = 1;
-    private static final int SENTCLUE = 2;
+    private static final int TURN = 1;
+    private static final int GAMEOVER = 2;
     private static final int ANOTHER = 3;
-
-    private static final int NUMJOKES = 5;
-
     private int state = WAITING;
-    private int currentJoke = 0;
+    
+    private static TicTacToeGame game = new TicTacToeGame();
 
-    private String[] clues = { "Turnip", "Little Old Lady", "Atch", "Who",
-        "Who" };
-    private String[] answers = { "Turnip the heat, it's cold in here!",
-                                 "I didn't know you could yodel!",
-                                 "Bless you!",
-                                 "Is there an owl in here?",
-                                 "Is there an echo in here?" };
-
-    public String processInput(String theInput) {
+    public String processInput(String theInput, int pID) {
         String theOutput = null;
 
         if (state == WAITING) {
-            theOutput = "Knock! Knock!";
-            state = SENTKNOCKKNOCK;
-        } else if (state == SENTKNOCKKNOCK) {
-            if (theInput.equalsIgnoreCase("Who's there?")) {
-                theOutput = clues[currentJoke];
-                state = SENTCLUE;
+            System.out.println("WAITING");
+            theOutput = game.print();
+            state = TURN;
+        }
+        else if (state == TURN){
+            System.out.println("TURN");
+
+            if (theInput.length() == 1 && '1' <= theInput.charAt(0)
+                &&  theInput.charAt(0) <= '9'){
+                try{
+                    if (game.turnHandler(pID, theInput.charAt(0))){
+                        //theOutput = game.print();
+                        theOutput = "Game Over\n" + game.print();
+                        if (game.result == '0') {
+                            theOutput += "Tie Game.\n";
+                        } else if (game.result == '#'){
+                           System.out.println("big ol' ERROR. . . !\n"); 
+                        } else{
+                            theOutput += "Player " + game.result + " wins!\n";
+                        }
+                        //theOutput += "Want to play again? (y/n)\n";
+                        //state = ANOTHER;
+                        theOutput += "Bye.";
+                        state = GAMEOVER;
+                    } else {
+                        theOutput = game.print();
+                        //state = WAITING;
+                    }
+                
+                } catch (CoordinatesDNE e){
+                    theOutput = "Error: CoordinatesDNE: Enter the digits 1-9 to"
+                        + " place your token in an unoccupied space. Try"
+                        + " again.\n";
+                } catch  (LocationTaken e) {
+                    theOutput = "Error: Location Taken: try another spot marked"
+                        + " with a number 1-9.\n";
+                } catch (PlayerDNE e){
+                    e.printStackTrace();
+                }
             } else {
-                theOutput = "You're supposed to say \"Who's there?\"! " +
-			    "Try again. Knock! Knock!";
+                theOutput = "Error: CoordinatesDNE: Enter the digits 1-9 to"
+                    + " place your token in an unoccupied space. Try again.\n";
             }
-        } else if (state == SENTCLUE) {
-            if (theInput.equalsIgnoreCase(clues[currentJoke] + " who?")) {
-                theOutput = answers[currentJoke] + " Want another? (y/n)";
-                state = ANOTHER;
-            } else {
-                theOutput = "You're supposed to say \"" + 
-			    clues[currentJoke] + 
-			    " who?\"" + 
-			    "! Try again. Knock! Knock!";
-                state = SENTKNOCKKNOCK;
-            }
-        } else if (state == ANOTHER) {
+        } else if (state == GAMEOVER){
+            theOutput = "Bye.";
+            state = GAMEOVER;
+        }
+        else if (state == ANOTHER) {
+            System.out.println("ANOTHER");
+            
             if (theInput.equalsIgnoreCase("y")) {
-                theOutput = "Knock! Knock!";
-                if (currentJoke == (NUMJOKES - 1))
-                    currentJoke = 0;
-                else
-                    currentJoke++;
-                state = SENTKNOCKKNOCK;
+                game.init();
+                theOutput = game.print();
+                state = TURN;
             } else {
                 theOutput = "Bye.";
                 state = WAITING;

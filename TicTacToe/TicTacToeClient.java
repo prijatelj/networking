@@ -1,6 +1,7 @@
-/*
- * Derek S. Prijatelj
+/**
  * Network Assignment 2
+ * Modified Knock Knock code from Oracle to play TicTacToe.
+ * @author Derek S. Prijatelj
  */
 
 /*
@@ -61,14 +62,15 @@ public class TicTacToeClient {
             String fromUser;
 
             while ((fromServer = in.readLine()) != null) {
-                System.out.println("Server: " + fromServer);
+                System.out.println(fromServer);
                 if (fromServer.equals("Bye."))
                     break;
-                
-                fromUser = stdIn.readLine();
-                if (fromUser != null) {
-                    System.out.println("Client: " + fromUser);
-                    out.println(fromUser);
+                if (fromServer.equals("")){ // specified when to get input
+                    fromUser = stdIn.readLine();
+                    if (fromUser != null) {
+                        //System.out.println("Client: " + fromUser);
+                        out.println(fromUser);
+                    }
                 }
             }
         } catch (UnknownHostException e) {

@@ -1,6 +1,7 @@
-/*
- * Derek S. Prijatelj
+/**
  * Network Assignment 2
+ * Modified Knock Knock code from Oracle to play TicTacToe
+ * @author Derek S. Prijatelj
  */
 
 /*
@@ -50,24 +51,69 @@ public class TicTacToeServer {
         try ( 
             ServerSocket serverSocket = new ServerSocket(portNumber);
             Socket clientSocket = serverSocket.accept();
+            Socket clientSocket2 = serverSocket.accept();
+            
             PrintWriter out =
                 new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(
                 new InputStreamReader(clientSocket.getInputStream()));
+
+            PrintWriter out2 =
+                new PrintWriter(clientSocket2.getOutputStream(), true);
+            BufferedReader in2 = new BufferedReader(
+                new InputStreamReader(clientSocket2.getInputStream()));
         ) {
         
             String inputLine, outputLine;
+            boolean initialPlay = true, p2InputError;
+            int count = 0;
             
             // Initiate conversation with client
             TicTacToeProtocol kkp = new TicTacToeProtocol();
-            outputLine = kkp.processInput(null);
+            outputLine = kkp.processInput(null, 0); // initial display to X
             out.println(outputLine);
 
-            while ((inputLine = in.readLine()) != null) {
-                outputLine = kkp.processInput(inputLine);
-                out.println(outputLine);
-                if (outputLine.equals("Bye."))
+            while ((inputLine = in.readLine()) != null){ // Player 1
+                outputLine = kkp.processInput(inputLine, 0); // process p1 input
+                
+                if (outputLine.length() > 6
+                        && outputLine.startsWith("Error:")){
+                    out.println(outputLine);
+                    continue;
+                }
+                out2.println(outputLine); // display updated table to p2
+                if (outputLine.startsWith("Game Over")){
+                    out.println(outputLine);
+                    //break;
+                }
+                if (outputLine.endsWith("Bye.")){
                     break;
+                }
+
+                // Player 2
+                p2InputError = true; // 2nd players turn
+                while (p2InputError && ((inputLine = in2.readLine()) != null)){
+                    outputLine = kkp.processInput(inputLine, 1);
+                    if (outputLine.length() > 6
+                            && outputLine.startsWith("Error:")){
+                        out2.println(outputLine);
+                        continue;
+                    }
+                    p2InputError = false;
+                    out.println(outputLine); // display updated table to p1
+
+                    System.out.println("End of inner while loop for p2");
+                }
+                if (outputLine.startsWith("Game Over")){
+                    out2.println(outputLine);
+                    //break;
+                }
+                if (outputLine.endsWith("Bye.")){
+                    break;
+                }
+
+                count++;
+                System.out.println("Made it to the end! " + count);
             }
         } catch (IOException e) {
             System.out.println(
