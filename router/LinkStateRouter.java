@@ -3,6 +3,10 @@ package router;
 import java.util.Scanner;
 import java.util.HashSet;
 
+/**
+ * Simulates a Link State Router
+ * @author Derek S. Prijatelj
+ */
 public class LinkStateRouter{
 
     public static class NoPathToHost extends Exception{
@@ -21,18 +25,13 @@ public class LinkStateRouter{
         }   
     }
 
-    public static void main(String[] args){
-        // set up first node as this router
-        Node router = new Node(0, new int[]{127,0,0,1});
+    public static void initialize(Node router, HashSet<Integer> usedInterf){
         
-        // Initialize
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine();
         String[] parts;
         int flag, interf, cost;
-        int[] ipAddress1 = new int[4];
-        int[] ipAddress2 = new int[4];
-        HashSet<Integer> usedInterf = new HashSet <>();
+        int[] ipAddress = new int[4];
 
         while(!line.equals("0,0,0.0.0.0,0") && sc.hasNextLine()){
             // Flag, Interface, IP Address, Cost
@@ -64,10 +63,10 @@ public class LinkStateRouter{
                 continue;
             }
             
-            ipAddress1[0] = Integer.parseInt(parts[0]);
-            ipAddress1[1] = Integer.parseInt(parts[1]);
-            ipAddress1[2] = Integer.parseInt(parts[2]);
-            ipAddress1[3] = Integer.parseInt(parts[3]);
+            ipAddress[0] = Integer.parseInt(parts[0]);
+            ipAddress[1] = Integer.parseInt(parts[1]);
+            ipAddress[2] = Integer.parseInt(parts[2]);
+            ipAddress[3] = Integer.parseInt(parts[3]);
 
             if (flag != 0 || flag != 1) {
                 System.err.println("Error: Incorrect Initialize Flag Value: "
@@ -81,10 +80,10 @@ public class LinkStateRouter{
                     + "\nPlease submit input again."
                     );
                 continue;
-            } else if (ipAddress1[0] < 0 && ipAddress1[0] > 255
-                    && ipAddress1[1] < 0 && ipAddress1[1] > 255
-                    && ipAddress1[2] < 0 && ipAddress1[2] > 255
-                    && ipAddress1[3] < 0 && ipAddress1[3] > 255
+            } else if ((ipAddress[0] < 0 && ipAddress[0] > 255)
+                    || (ipAddress[1] < 0 && ipAddress[1] > 255)
+                    || (ipAddress[2] < 0 && ipAddress[2] > 255)
+                    || (ipAddress[3] < 0 && ipAddress[3] > 255)
                     ){
                 System.err.println(
                     "Error: Incorrect Initialization Input Format: "
@@ -108,15 +107,124 @@ public class LinkStateRouter{
                     );
                 continue;
             }
-
             
-            router.addNeighbor(cost, new Node(flag, interf, ipAddress1));
+            router.addNeighbor(cost, new Node(flag, interf, ipAddress));
         }
+    }
 
+    public static void simulation(Node router, HashSet<Integer> usedInterf){
+        
+        Scanner sc = new Scanner(System.in);
+        String line = sc.nextLine();
+        String[] parts, ip1Parts, ip2Parts;
+        int flag, interf, cost;
+        int[] ipAddress1 = new int[4];
+        int[] ipAddress2 = new int[4];
+        
         // Router Simulation: Receiving Packets & Info
         while (sc.hasNextLine()) {
+            // Flag, Interface, IP Address1, IP Address2, Cost
             line = sc.nextLine();
-        
+            parts = line.split(",");
+            
+            if (parts.length != 5) {
+                System.err.println(
+                    "Error: Incorrect Initialization Input Format: "
+                    + "Must be of the format: Flag, Interface, IP Address, Cost"
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            }
+           
+            // TODO Handle NumberFormatException for all parseInt()
+            flag = Integer.parseInt(parts[0]);
+            interf = Integer.parseInt(parts[1]);
+            cost = Integer.parseInt(parts[4]);
+            ip1Parts = ip1Parts[2].split(".");
+            ip2Parts = ip1Parts[3].split(".");
+
+            if (ip1Parts.length != 4 || ip2Parts.length != 4) {
+                System.err.println(
+                    "Error: Incorrect Initialization Input Format: "
+                    + "IP addresses must be of the format: #.#.#.# \n"
+                    + "where # is an integer value in the range [0,255]"
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            }
+            
+            ipAddress1[0] = Integer.parseInt(ip1Parts[0]);
+            ipAddress1[1] = Integer.parseInt(ip1Parts[1]);
+            ipAddress1[2] = Integer.parseInt(ip1Parts[2]);
+            ipAddress1[3] = Integer.parseInt(ip1Parts[3]);
+
+            ipAddress2[0] = Integer.parseInt(ip1Parts[0]);
+            ipAddress2[1] = Integer.parseInt(ip1Parts[1]);
+            ipAddress2[2] = Integer.parseInt(ip1Parts[2]);
+            ipAddress2[3] = Integer.parseInt(ip1Parts[3]);
+
+            if (flag != 0 || flag != 1) {
+                System.err.println("Error: Incorrect Initialize Flag Value: "
+                    + "Flag value in input must be 0 or 1"
+                    );
+                continue;
+            } else if (interf < 0) { 
+                System.err.println(
+                    "Error: Incorrect Initialize Interface Value: "
+                    + "Interface must be a unique positive integer"
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            } else if ((ipAddress1[0] < 0 && ipAddress1[0] > 255)
+                    || (ipAddress1[1] < 0 && ipAddress1[1] > 255)
+                    || (ipAddress1[2] < 0 && ipAddress1[2] > 255)
+                    || (ipAddress1[3] < 0 && ipAddress1[3] > 255)
+                    || (ipAddress2[0] < 0 && ipAddress2[0] > 255)
+                    || (ipAddress2[1] < 0 && ipAddress2[1] > 255)
+                    || (ipAddress2[2] < 0 && ipAddress2[2] > 255)
+                    || (ipAddress2[3] < 0 && ipAddress2[3] > 255)
+                    ){
+                System.err.println(
+                    "Error: Incorrect Initialization Input Format: "
+                    + "IP address must be of the format: #.#.#.# \n"
+                    + "where # is an integer value in the range [0,255]"
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            } else if (cost < 0){
+                System.err.println("Error: Incorrect Cost Value: "
+                    + "Cost must be apositive integer value."
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            }
+    
+            /*
+             * Check if interf exists, otherwise this was recieved from unknown
+             * router
+             */
+            if (!usedInterf.contains(interf)){
+                System.err.println("Error: Unknown Interface Used: "
+                    + "Interface value entered is not known to router from "
+                    + "initialization. Thus an unknown neighbor exists, but "
+                    + "unable to add new router as neighbor due to lack of "
+                    + "certainty of the intermediate router/network's IP address"
+                    + "\nPlease submit input again."
+                    );
+                continue;
+            }
+
+            // Do something with this input ???? 0 if Advertisement, 1 if datagram
+
         }
+    }
+
+    public static void main(String[] args){
+        // set up first node as this router
+        Node router = new Node(1, -1, new int[]{127,0,0,1});
+        HashSet<Integer> usedInterf = new HashSet <>(); // esnures unique interf
+       
+        initializeRouter(router, usedInterf);
+        simulation(router, usedInterf);
     }
 }
