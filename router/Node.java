@@ -6,7 +6,7 @@ import java.util.ArrayList;
  * Node represents either a router or a network.
  * @author Derek S. Prijatelj
  */
-public class Node{
+public class Node implements Comparable<Node>{
     
     public int flag;
     public int interf;// unique
@@ -19,7 +19,7 @@ public class Node{
     //public HashMap <Integer, Integer> neighbors = new HashMap<>();
     
     public boolean inQueue = false;
-    public int priority;
+    public int priority = Integer.MAX_VALUE;
 
 
     public Node(){}
@@ -53,4 +53,8 @@ public class Node{
     }
     //*/
     
+    @Override
+    public int compareTo(Node o){
+        return Integer.compare(this.priority, o.priority);
+    }
 }
