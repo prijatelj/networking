@@ -28,7 +28,7 @@ public class LinkStateRouter{
     public static void initialize(Node router, HashSet<Integer> usedInterf){
         
         Scanner sc = new Scanner(System.in);
-        String line = sc.nextLine();
+        String line = sc.nextLine(), ip;
         String[] parts;
         int flag, interf, cost;
         int[] ipAddress = new int[4];
@@ -51,6 +51,7 @@ public class LinkStateRouter{
             flag = Integer.parseInt(parts[0]);
             interf = Integer.parseInt(parts[1]);
             cost = Integer.parseInt(parts[3]);
+            ip = parts[2];
             parts = parts[2].split(".");
 
             if (parts.length != 4) {
@@ -67,6 +68,7 @@ public class LinkStateRouter{
             ipAddress[1] = Integer.parseInt(parts[1]);
             ipAddress[2] = Integer.parseInt(parts[2]);
             ipAddress[3] = Integer.parseInt(parts[3]);
+
 
             if (flag != 0 || flag != 1) {
                 System.err.println("Error: Incorrect Initialize Flag Value: "
@@ -108,18 +110,17 @@ public class LinkStateRouter{
                 continue;
             }
             
-            router.addNeighbor(cost, new Node(flag, interf, ipAddress));
+            router.addNeighbor(cost, new Node(flag, interf, ip));
         }
     }
 
     public static void simulation(Node router, HashSet<Integer> usedInterf){
         
         Scanner sc = new Scanner(System.in);
-        String line = sc.nextLine();
+        String line = sc.nextLine(), ip1, ip2;
         String[] parts, ip1Parts, ip2Parts;
         int flag, interf, cost;
-        int[] ipAddress1 = new int[4];
-        int[] ipAddress2 = new int[4];
+        int[] ipAddress1 = new int[4], ipAddress2 = new int[4];
         
         // Router Simulation: Receiving Packets & Info
         while (sc.hasNextLine()) {
@@ -140,8 +141,10 @@ public class LinkStateRouter{
             flag = Integer.parseInt(parts[0]);
             interf = Integer.parseInt(parts[1]);
             cost = Integer.parseInt(parts[4]);
-            ip1Parts = ip1Parts[2].split(".");
-            ip2Parts = ip1Parts[3].split(".");
+            ip1 = parts[2];
+            ip2 = parts[3];
+            ip1Parts = parts[2].split(".");
+            ip2Parts = parts[3].split(".");
 
             if (ip1Parts.length != 4 || ip2Parts.length != 4) {
                 System.err.println(
@@ -216,15 +219,18 @@ public class LinkStateRouter{
 
             // Do something with this input ???? 0 if Advertisement, 1 if datagram
 
+            
+
         }
     }
 
     public static void main(String[] args){
         // set up first node as this router
-        Node router = new Node(1, -1, new int[]{127,0,0,1});
+        Node router = new Node(1, -1,"120.0.0.1");
         HashSet<Integer> usedInterf = new HashSet <>(); // esnures unique interf
        
-        initializeRouter(router, usedInterf);
+        initialize(router, usedInterf);
+        // Inform neighboring Peer Routers of all other links
         simulation(router, usedInterf);
     }
 }

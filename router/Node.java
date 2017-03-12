@@ -10,7 +10,7 @@ public class Node{
     
     public static int flag;
     public static int interf;// unique
-    public static int[] ip = new int [4]; // IP address
+    public static String ip; // IP address
     public ArrayList <Edge> neighbors;
 
     // HashMap of neighbors to this router <interf, cost>
@@ -22,7 +22,7 @@ public class Node{
 
 
     public Node(){}
-    public Node(int flag, int interf, int[] ip){
+    public Node(int flag, int interf, String ip){
         this.flag = flag;
         this.interf = interf;
         this.ip = ip;
