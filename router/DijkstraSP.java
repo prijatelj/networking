@@ -32,9 +32,9 @@ public class DijkstraSP{
     private static void initialize(Node source, HashSet<Node> visited){
         if (!visited.contains(source)){
             source.priority = Integer.MAX_VALUE;
-            source.prev = NULL;
+            source.prev = null;
 
-            visited.put(source);
+            visited.add(source);
             
             for (Edge e : source.neighbors){
                 initialize(e.to, visited);
