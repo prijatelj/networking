@@ -122,12 +122,13 @@ public class LinkStateRouter{
                 continue;
             }
             
-            Node newNode = new Node(flag, interf, ip);
-            router.addNeighbor(cost, newNode);
+            Node newNode = new Node(flag, interf, ip, router, cost);
+            router.addNeighbor(newNode, cost);
             forwardingTable.put(ip, newNode);
         }
 
         // Inform all Peer routers of other neighbors
+        peerInform();
     }
 
     public void simulation(){
@@ -234,15 +235,26 @@ public class LinkStateRouter{
             }
 
             // Do something with this input ???? 0 if Advertisement, 1 if datagram
-            
+            if (flag == 0){
+                handleAdvertisement();
+            } else {
+                handleDatagram();
+            } 
 
         }
     }
     
     /**
+     * Inform peer router on interface about updated links between two ips
+     */
+    public void advertiseLink(int interf, String ip1, String ip2, int cost){
+        System.out.println("0," + interf + "," + ip1 + "," + ip2 + "," + cost );
+    }
+
+    /**
      * Inform all peer routers of updated links between neighbors
      */
-    public void peerInfrom(){
+    public void peerInform(){
         for (Edge n : router.neighbors){
             for (Edge m : router.neighbors){
                 if (n.to.ip.equals(m.to.ip)){
@@ -252,13 +264,21 @@ public class LinkStateRouter{
             }
         }
     }
-    /**
-     * Inform peer router on interface about updated links between two ips
+
+    /*
+     * Handler for advertisement of link update to propagte the network
      */
-    public void advertiseLink(int interf, String ip1, String ip2, int cost){
-        System.out.println("0," + interf + "," + ip1 + "," + ip2 + "," + cost );
+    public void handleAdvertisement(){
+    
     }
 
+    public void handleDatagram(){
+    
+    }
+    
+    /*
+     * main method for testing purposes.
+     */
     public static void main(String[] args){
         // set up first node as this router
         LinkStateRouter router = new LinkStateRouter();
