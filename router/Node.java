@@ -29,12 +29,12 @@ public class Node{
         this.ip = ip;
         neighbors = new ArrayList<Edge>();
     }
-    public Node(int flag, int interf, String ip, Node n, int cost){
-        this.Node(flag, interf, ip);
-        neighbors.add(new Edge(n, cost));
+    public Node(int flag, int interf, String ip, Node neighbor, int cost){
+        this(flag, interf, ip);
+        neighbors.add(new Edge(neighbor, cost));
     }
     
-    public void addNeighbor(int cost, Node neighbor){
+    public void addNeighbor(Node neighbor, int cost){
         neighbors.add(new Edge(neighbor, cost));
     }
 
