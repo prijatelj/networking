@@ -242,8 +242,21 @@ public class LinkStateRouter{
     /**
      * Inform all peer routers of updated links between neighbors
      */
-    public void informNeighbors(){
-    
+    public void peerInfrom(){
+        for (Edge n : router.neighbors){
+            for (Edge m : router.neighbors){
+                if (n.to.ip.equals(m.to.ip)){
+                    continue;
+                }
+                advertiseLink(n.to.interf, router.ip, m.to.ip, m.cost);
+            }
+        }
+    }
+    /**
+     * Inform peer router on interface about updated links between two ips
+     */
+    public void advertiseLink(int interf, String ip1, String ip2, int cost){
+        System.out.println("0," + interf + "," + ip1 + "," + ip2 + "," + cost );
     }
 
     public static void main(String[] args){

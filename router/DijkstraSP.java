@@ -1,22 +1,19 @@
 package router;
 
-import java.io.IOException;
+import java.util.HashSet;
+import java.util.PriorityQueue; // This will need replaced w/ dijkstra opt. PQ
 
 /**
  *
  * @author Derek S. Prijatelj
  */
 public class DijkstraSP{
+    
+    public void dijkstra(Node source){
+        HashSet<Node> visited = new HashSet<>();
 
-    public static class Pair{
-        public Node n1, n2;
-        int cost;
-        
-        public Pair(Node n1, Node n2, int cost){
-            this.n1 = n1;
-            this.n2 = n2;
-            this.cost = cost;
-        }
+        // Traverse graph, mark the nodes
+
+
     }
-
 }

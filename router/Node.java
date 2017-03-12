@@ -8,10 +8,11 @@ import java.util.ArrayList;
  */
 public class Node{
     
-    public static int flag;
-    public static int interf;// unique
-    public static String ip; // IP address
+    public int flag;
+    public int interf;// unique
+    public String ip; // IP address
     public ArrayList <Edge> neighbors;
+    public Node prev;
 
     // HashMap of neighbors to this router <interf, cost>
     // may want <Node.ipAddress, cost>
@@ -33,7 +34,7 @@ public class Node{
         neighbors.add(new Edge(neighbor, cost));
     }
 
-    //*/ Edges are Pairs of cost and destination Node
+    /* Edges are Pairs of cost and destination Node
     public static class Edge implements Comparable <Edge>{
         int cost = Integer.MAX_VALUE;
         Node to;
@@ -55,14 +56,19 @@ public class Node{
     }
     //*/
 
-    /* equal if have same ip address, cuz those should be unique.
+    //* equal if have same ip address, cuz those should be unique.
+    @Override
     public boolean equals(Object obj){
-        
+        if (obj instanceof Node && ip.equals(((Node)obj).ip)){
+            return true;
+        }
+        return false;
     }
 
+    @Override
     public int hashCode(){
-        
+        return ip.hashCode();   
     }
-    */
+    //*/
     
 }
