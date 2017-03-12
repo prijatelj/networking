@@ -19,7 +19,7 @@ public class Node{
     //public HashMap <Integer, Integer> neighbors = new HashMap<>();
     
     public boolean inQueue = false;
-    public int posPQ;
+    public int priority;
 
 
     public Node(){}
@@ -29,32 +29,14 @@ public class Node{
         this.ip = ip;
         neighbors = new ArrayList<Edge>();
     }
+    public Node(int flag, int interf, String ip, Node n, int cost){
+        this.Node(flag, interf, ip);
+        neighbors.add(new Edge(n, cost));
+    }
     
     public void addNeighbor(int cost, Node neighbor){
         neighbors.add(new Edge(neighbor, cost));
     }
-
-    /* Edges are Pairs of cost and destination Node
-    public static class Edge implements Comparable <Edge>{
-        int cost = Integer.MAX_VALUE;
-        Node to;
-
-        @Override
-        public int compareTo(Edge o){
-            if (this.cost < o.cost){
-                return -1;
-            } else if (this.cost > o.cost){
-                return 1;
-            }
-            return 0;
-        }
-
-        public Edge(Node to, int cost){
-            this.to = to;
-            this.cost = cost;
-        }
-    }
-    //*/
 
     //* equal if have same ip address, cuz those should be unique.
     @Override

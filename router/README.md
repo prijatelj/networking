@@ -54,3 +54,12 @@ Output
 -
 Instead of sending out packets, the router will print the appropriate information to standard output. The format of the output is the same as the format as the input for the simulation part, except that INTERFACE will be the number of the outgoing interface. COST for datagrams is always 0. Note that the router will not try to send out a packet to a link (interface) that is current down.
 If there is no route to a host X, then the router should print out the error message "No path to host: X" to standard output. "X" should be the same string as was in the input file.
+
+___
+TODO
+=
++ Formalize the program so its less of a toy program:
+    - Appropriately Change all public fields and methods to private
+    - Create public method handlers to change private fields if necessary
++ Create own priority queue optimized for Dijkstra's, inplace of Java API.
+    - either Binomial, Pairing, or better.
