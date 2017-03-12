@@ -2,12 +2,24 @@ package router;
 
 import java.util.Scanner;
 import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * Simulates a Link State Router
  * @author Derek S. Prijatelj
  */
 public class LinkStateRouter{
+    // IP Address Interface Pair
+    public HashMap<String, Node> forwardingTable = new HashMap<>();
+    public HashSet<Integer> usedInterf = new HashSet<>();
+    public Node router;
+    
+    public LinkStateRouter(){
+        router = new Node(1, -1,"120.0.0.1");
+    }
+    public LinkStateRouter(Node router){
+        this.router = router;
+    }
 
     public static class NoPathToHost extends Exception{
         public NoPathToHost () {}
@@ -25,7 +37,7 @@ public class LinkStateRouter{
         }   
     }
 
-    public static void initialize(Node router, HashSet<Integer> usedInterf){
+    public void initialize(){
         
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine(), ip;
@@ -110,11 +122,15 @@ public class LinkStateRouter{
                 continue;
             }
             
-            router.addNeighbor(cost, new Node(flag, interf, ip));
+            Node newNode = new Node(flag, interf, ip);
+            router.addNeighbor(cost, newNode);
+            forwardingTable.put(ip, newNode);
         }
+
+        // Inform all Peer routers of other neighbors
     }
 
-    public static void simulation(Node router, HashSet<Integer> usedInterf){
+    public void simulation(){
         
         Scanner sc = new Scanner(System.in);
         String line = sc.nextLine(), ip1, ip2;
@@ -218,19 +234,24 @@ public class LinkStateRouter{
             }
 
             // Do something with this input ???? 0 if Advertisement, 1 if datagram
-
             
 
         }
     }
+    
+    /**
+     * Inform all peer routers of updated links between neighbors
+     */
+    public void informNeighbors(){
+    
+    }
 
     public static void main(String[] args){
         // set up first node as this router
-        Node router = new Node(1, -1,"120.0.0.1");
-        HashSet<Integer> usedInterf = new HashSet <>(); // esnures unique interf
-       
-        initialize(router, usedInterf);
+        LinkStateRouter router = new LinkStateRouter();
+
+        router.initialize();
         // Inform neighboring Peer Routers of all other links
-        simulation(router, usedInterf);
+        router.simulation();
     }
 }
