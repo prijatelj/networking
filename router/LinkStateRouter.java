@@ -23,22 +23,6 @@ public class LinkStateRouter{
         this.router = router;
     }
 
-    public static class NoPathToHost extends Exception{
-        public NoPathToHost () {}
-
-        public NoPathToHost (String message){
-            super (message);
-        }
-
-        public NoPathToHost (Throwable cause){
-            super (cause);
-        }
-
-        public NoPathToHost (String message, Throwable cause){
-            super (message, cause);
-        }
-    }
-
     /**
      * Performs dijkstra's shortest path algorithm on the given source node.
      * Assumes all nodes contain a set of their neighbors
@@ -103,13 +87,14 @@ public class LinkStateRouter{
 
         while(!line.equals("0,0,0.0.0.0,0") && sc.hasNextLine()){
             // Flag, Interface, IP Address, Cost
-            line = sc.nextLine();
+            line = sc.nextLine().trim();
             parts = line.split(",");
 
             if (parts.length != 4) {
                 System.err.println(
                     "Error: Incorrect Initialization Input Format: "
                     + "Must be of the format: Flag, Interface, IP Address, Cost"
+                    + " length = " + parts.length
                     + "\nPlease submit input again."
                     );
                 continue;
