@@ -31,13 +31,16 @@ public class Node implements Comparable<Node>{
     }
     public Node(int flag, int interf, String ip, Node neighbor, int cost){
         this(flag, interf, ip);
-        //neighbors.add(new Edge(neighbor, cost));
-        neighbors.put(neighbor, cost);
+        this.addNeighbor(neighbor, cost);
     }
     
+    /**
+     * Never add a connection with cost Integer.MAX_VALUE
+     */
     public void addNeighbor(Node neighbor, int cost){
-        //neighbors.add(new Edge(neighbor, cost));
-        neighbors.put(neighbor, cost);
+        if (cost != Integer.MAX_VALUE){
+            neighbors.put(neighbor, cost);
+        }
     }
 
     //* equal if have same ip address, cuz those should be unique.

@@ -54,7 +54,7 @@ public class LinkStateRouter{
         dijkstraInit(verts, pq);
 
         src.priority = 0;
-        pq.add(src); // Necessary?
+        pq.add(src);
 
         int alt;
         int cost;
@@ -184,7 +184,7 @@ public class LinkStateRouter{
         }
 
         // Inform all Peer routers of other neighbors
-        peerInform();
+        initialInformPeers();
     }
 
     public void simulation(){
@@ -311,7 +311,7 @@ public class LinkStateRouter{
      * Inform all peer routers of updated links between neighbors; inform about
      * both routers and networks
      */
-    public void peerInform(){
+    public void initialInformPeers(){
         Node m;
         for (Node n : router.neighbors.keySet()){
             if (n.flag == 0){ // only informs peer Routers, not Networks
@@ -329,6 +329,18 @@ public class LinkStateRouter{
     }
 
     /**
+     * Inform peers of a single update, ignoring the peer this was recieved from
+     */
+     public void informPeers(int recievedFrom, String ip1, String ip2, int cost){
+        for (Node n : router.neighbors.keySet()){
+            if (n.flag == 0 || n.interf == recievedFrom){
+                continue;
+            }
+            advertiseLink(n.interf, ip1, ip2, cost);
+        }
+     }
+
+    /**
      * Returns the next router/node in route to destination.
      * Travels towards the root router from destination.
      *
@@ -344,30 +356,56 @@ public class LinkStateRouter{
     /**
      * Handler for advertisement of link update to propagte the network
      */
-    public void handleAdvert(int interf, String ip1, String ip2,
-            int cost){
+    public void handleAdvert(int interf, String ip1, String ip2, int cost){
         Node node1 = fwdTable.get(ip1), node2 = fwdTable.get(ip2);
 
         if (node1 == null){ // add node to graph. redo DijkstraSP
             node1 = new Node(-2, -2, ip1, node2, cost);
-            node2.addNeighbor(node1, cost);
             fwdTable.put(ip1, node1);
+            
+            if (cost != Integer.MAX_VALUE){
+                node2.addNeighbor(node1, cost);
+                dijkstra(router, fwdTable);
+                informPeers(interf, ip1, ip2, cost);
+            }
         } else if (node2 == null) {
             // impossible for two unknowns, given propagation of advertisements.
-            node2 = new Node(-2, -2, ip1, node1, cost);
-            node1.addNeighbor(node2, cost);
+            node2 = new Node(-2, -2, ip2, node1, cost);
             fwdTable.put(ip2, node2);
+            
+            if (cost != Integer.MAX_VALUE){
+                node1.addNeighbor(node2, cost);
+                dijkstra(router, fwdTable);
+                informPeers(interf, ip1, ip2, cost);
+            }
         } else { // Both nodes known to router & in fwdTable, update cost
-            // If link between nodes exists, update cost
+            Integer cost1 = node1.neighbors.get(ip2);
+            Integer cost2 = node2.neighbors.get(ip1);
 
-            // if no link exists, create link between both
-
-            //node1
+            // If link between nodes exists, && different costs: update cost
+            if (cost1 != null && cost2 != null){
+                if (cost1 != cost && cost2 != cost){
+                    if (cost != Integer.MAX_VALUE){
+                        Integer costInt = new Integer(cost);
+                        
+                        node1.neighbors.put(node2, costInt);
+                        node2.neighbors.put(node1, costInt);
+                    } else { // break connection
+                        node1.neighbors.remove(node2);
+                        node2.neighbors.remove(node1);
+                    }
+                }
+            } else {
+                // if no link exists, create link between both
+                if (cost != Integer.MAX_VALUE){
+                    node1.addNeighbor(node2, cost);
+                    node2.addNeighbor(node1, cost);
+                }
+            }
+            
+            dijkstra(router, fwdTable);
+            informPeers(interf, ip1, ip2, cost);
         }
-
-        dijkstra(router, fwdTable);
-
-        System.out.println("0," + interf + "," + ip1 + "," + ip2 + "," + cost);
     }
 
     /**
@@ -376,7 +414,7 @@ public class LinkStateRouter{
      */
     public void handleDatagram(int interf, String ip1, String ip2){
         Node dest = fwdTable.get(ip2);
-        if (dest == null){
+        if (dest == null || dest.priority == Integer.MAX_VALUE){
             System.err.println("No path to host: " + ip2);
         } else {
             Node next = nextRouter(dest);
