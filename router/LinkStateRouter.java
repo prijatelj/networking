@@ -1,5 +1,6 @@
 package router;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class LinkStateRouter{
     public Node router;
 
     public LinkStateRouter(){
-        router = new Node(1, -1,"120.0.0.1");
+        router = new Node(1, -1,"127.0.0.1");
     }
     public LinkStateRouter(Node router){
         this.router = router;
@@ -80,21 +81,25 @@ public class LinkStateRouter{
     public void initialize(){
 
         Scanner sc = new Scanner(System.in);
-        String line = sc.nextLine(), ip;
+        String line, ip;
         String[] parts;
         int flag, interf, cost;
         int[] ipAddress = new int[4];
 
-        while(!line.equals("0,0,0.0.0.0,0") && sc.hasNextLine()){
+        while(sc.hasNextLine()){
             // Flag, Interface, IP Address, Cost
             line = sc.nextLine().trim();
+            
+            if (line.equals("0,0,0.0.0.0,0")){
+                break;
+            }
+
             parts = line.split(",");
 
             if (parts.length != 4) {
                 System.err.println(
                     "Error: Incorrect Initialization Input Format: "
                     + "Must be of the format: Flag, Interface, IP Address, Cost"
-                    + " length = " + parts.length
                     + "\nPlease submit input again."
                     );
                 continue;
@@ -105,13 +110,15 @@ public class LinkStateRouter{
             interf = Integer.parseInt(parts[1]);
             cost = Integer.parseInt(parts[3]);
             ip = parts[2];
-            parts = parts[2].split(".");
+            parts = parts[2].split("\\.");
 
             if (parts.length != 4) {
                 System.err.println(
-                    "Error: Incorrect Initialization Input Format: "
+                    "Error 1: Incorrect Initialization Input Format: "
                     + "IP address must be of the format: #.#.#.# \n"
                     + "where # is an integer value in the range [0,255]"
+                    + " length = " + parts.length + " ip = "
+                    + Arrays.toString(ip.split("\\."))
                     + "\nPlease submit input again."
                     );
                 continue;
@@ -123,7 +130,7 @@ public class LinkStateRouter{
             ipAddress[3] = Integer.parseInt(parts[3]);
 
 
-            if (flag != 0 || flag != 1) {
+            if (flag != 0 && flag != 1) {
                 System.err.println("Error: Incorrect Initialize Flag Value: "
                     + "Flag value in input must be 0 or 1"
                     );
@@ -141,7 +148,7 @@ public class LinkStateRouter{
                     || (ipAddress[3] < 0 && ipAddress[3] > 255)
                     ){
                 System.err.println(
-                    "Error: Incorrect Initialization Input Format: "
+                    "Error 2: Incorrect Initialization Input Format: "
                     + "IP address must be of the format: #.#.#.# \n"
                     + "where # is an integer value in the range [0,255]"
                     + "\nPlease submit input again."
@@ -162,20 +169,23 @@ public class LinkStateRouter{
                     );
                 continue;
             }
-
+            
             Node newNode = new Node(flag, interf, ip, router, cost);
             router.addNeighbor(newNode, cost);
             fwdTable.put(ip, newNode);
         }
+        
+        dijkstra(router, fwdTable);
 
         // Inform all Peer routers of other neighbors
         initialInformPeers();
+        simulation(sc);
+        sc.close();
     }
 
-    public void simulation(){
-
-        Scanner sc = new Scanner(System.in);
-        String line = sc.nextLine(), ip1, ip2;
+    public void simulation(Scanner sc){
+        //Scanner sc = new Scanner(System.in);
+        String line, ip1, ip2;
         String[] parts, ip1Parts, ip2Parts;
         int flag, interf, cost;
         int[] ipAddress1 = new int[4], ipAddress2 = new int[4];
@@ -183,12 +193,12 @@ public class LinkStateRouter{
         // Router Simulation: Receiving Packets & Info
         while (sc.hasNextLine()) {
             // Flag, Interface, IP Address1, IP Address2, Cost
-            line = sc.nextLine();
+            line = sc.nextLine().trim();
             parts = line.split(",");
 
             if (parts.length != 5) {
                 System.err.println(
-                    "Error: Incorrect Initialization Input Format: "
+                    "Error: Incorrect Simulation Input Format: "
                     + "Must be of the format: Flag, Interface, IP Address, Cost"
                     + "\nPlease submit input again."
                     );
@@ -201,12 +211,12 @@ public class LinkStateRouter{
             cost = Integer.parseInt(parts[4]);
             ip1 = parts[2];
             ip2 = parts[3];
-            ip1Parts = parts[2].split(".");
-            ip2Parts = parts[3].split(".");
+            ip1Parts = parts[2].split("\\.");
+            ip2Parts = parts[3].split("\\.");
 
             if (ip1Parts.length != 4 || ip2Parts.length != 4) {
                 System.err.println(
-                    "Error: Incorrect Initialization Input Format: "
+                    "Error 3: Incorrect Simulation Input Format: "
                     + "IP addresses must be of the format: #.#.#.# \n"
                     + "where # is an integer value in the range [0,255]"
                     + "\nPlease submit input again."
@@ -224,14 +234,14 @@ public class LinkStateRouter{
             ipAddress2[2] = Integer.parseInt(ip1Parts[2]);
             ipAddress2[3] = Integer.parseInt(ip1Parts[3]);
 
-            if (flag != 0 || flag != 1) {
-                System.err.println("Error: Incorrect Initialize Flag Value: "
+            if (flag != 0 && flag != 1) {
+                System.err.println("Error: Incorrect Simulation Flag Value: "
                     + "Flag value in input must be 0 or 1"
                     );
                 continue;
             } else if (interf < 0) {
                 System.err.println(
-                    "Error: Incorrect Initialize Interface Value: "
+                    "Error: Incorrect Simulation Interface Value: "
                     + "Interface must be a unique positive integer"
                     + "\nPlease submit input again."
                     );
@@ -246,7 +256,7 @@ public class LinkStateRouter{
                     || (ipAddress2[3] < 0 && ipAddress2[3] > 255)
                     ){
                 System.err.println(
-                    "Error: Incorrect Initialization Input Format: "
+                    "Error 4: Incorrect Simulation Input Format: "
                     + "IP address must be of the format: #.#.#.# \n"
                     + "where # is an integer value in the range [0,255]"
                     + "\nPlease submit input again."
@@ -299,7 +309,7 @@ public class LinkStateRouter{
     public void initialInformPeers(){
         Node m;
         for (Node n : router.neighbors.keySet()){
-            if (n.flag == 0){ // only informs peer Routers, not Networks
+            if (n.flag == 0 || n.ip == router.ip){ // only informs peer Routers
                 continue;
             }
             for (Map.Entry<Node, Integer> entryM : router.neighbors.entrySet()){
@@ -332,7 +342,10 @@ public class LinkStateRouter{
      * @param current the current router in route from root to destination
      */
     public Node nextRouter(Node current){
-        if (current.prev.ip == router.ip){
+        if (current.ip.equals(router.ip)){
+            return router;
+        }
+        else if (current.prev.ip.equals(router.ip)){
             return current;
         }
         return nextRouter(current.prev);
@@ -345,32 +358,34 @@ public class LinkStateRouter{
         Node node1 = fwdTable.get(ip1), node2 = fwdTable.get(ip2);
 
         if (node1 == null){ // add node to graph. redo DijkstraSP
-            node1 = new Node(-2, -2, ip1, node2, cost);
+            node1 = new Node(-2, -2, ip1);
             fwdTable.put(ip1, node1);
             
             if (cost != Integer.MAX_VALUE){
+                node1.addNeighbor(node2, cost);
                 node2.addNeighbor(node1, cost);
                 dijkstra(router, fwdTable);
                 informPeers(interf, ip1, ip2, cost);
             }
         } else if (node2 == null) {
             // impossible for two unknowns, given propagation of advertisements.
-            node2 = new Node(-2, -2, ip2, node1, cost);
+            node2 = new Node(-2, -2, ip2);
             fwdTable.put(ip2, node2);
             
             if (cost != Integer.MAX_VALUE){
+                node2.addNeighbor(node1, cost);
                 node1.addNeighbor(node2, cost);
                 dijkstra(router, fwdTable);
                 informPeers(interf, ip1, ip2, cost);
             }
         } else { // Both nodes known to router & in fwdTable, update cost
-            Integer cost1 = node1.neighbors.get(ip2);
-            Integer cost2 = node2.neighbors.get(ip1);
+            Integer cost1 = node1.neighbors.get(node2);
+            Integer cost2 = node2.neighbors.get(node1);
 
-            // If link between nodes exists, && different costs: update cost
+            // If link between nodes exists
             if (cost1 != null && cost2 != null){
-                if (cost1 != cost && cost2 != cost){
-                    if (cost != Integer.MAX_VALUE){
+                if (cost1 != cost && cost2 != cost){ // different costs
+                    if (cost != Integer.MAX_VALUE){ // change connection
                         Integer costInt = new Integer(cost);
                         
                         node1.neighbors.put(node2, costInt);
@@ -379,17 +394,19 @@ public class LinkStateRouter{
                         node1.neighbors.remove(node2);
                         node2.neighbors.remove(node1);
                     }
-                }
-            } else {
-                // if no link exists, create link between both
+                    
+                    dijkstra(router, fwdTable);
+                    informPeers(interf, ip1, ip2, cost);
+                } // otherwise no change, ignore
+            } else { // if no link exists, create link between both
                 if (cost != Integer.MAX_VALUE){
                     node1.addNeighbor(node2, cost);
                     node2.addNeighbor(node1, cost);
+                    
+                    dijkstra(router, fwdTable);
+                    informPeers(interf, ip1, ip2, cost);
                 }
             }
-            
-            dijkstra(router, fwdTable);
-            informPeers(interf, ip1, ip2, cost);
         }
     }
 
@@ -399,11 +416,16 @@ public class LinkStateRouter{
      */
     public void handleDatagram(int interf, String ip1, String ip2){
         Node dest = fwdTable.get(ip2);
-        if (dest == null || dest.priority == Integer.MAX_VALUE){
+        if (dest == null){
             System.err.println("No path to host: " + ip2);
-        } else {
+        } else if (dest.priority == Integer.MAX_VALUE){
+            System.err.println("No path to host: " + ip2 + " Priority = INT MAX");
+        } else if (dest.ip != router.ip){
             Node next = nextRouter(dest);
-            System.out.println("1," + next.interf + "," + ip1 + "," + ip2 + ",0");
+            if (next.ip != router.ip){
+                System.out.println("1," + next.interf + "," + ip1 + "," + ip2
+                    + ",0");
+            } // otherwise, datagram has been recieved.
         }
     }
 
@@ -415,7 +437,6 @@ public class LinkStateRouter{
         LinkStateRouter router = new LinkStateRouter();
 
         router.initialize();
-        // Inform neighboring Peer Routers of all other links
-        router.simulation();
+        //router.simulation();
     }
 }
