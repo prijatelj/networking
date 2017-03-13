@@ -170,7 +170,9 @@ public class LinkStateRouter{
                 continue;
             }
             
-            Node newNode = new Node(flag, interf, ip, router, cost);
+            //Node newNode = new Node(flag, interf, ip, router, cost);
+            Node newNode = new Node(flag, interf, ip);
+            newNode.addNeighbor(router, cost);
             router.addNeighbor(newNode, cost);
             fwdTable.put(ip, newNode);
         }
@@ -309,7 +311,7 @@ public class LinkStateRouter{
     public void initialInformPeers(){
         Node m;
         for (Node n : router.neighbors.keySet()){
-            if (n.flag == 0 || n.ip == router.ip){ // only informs peer Routers
+            if (n.flag == 0 || n.ip.equals(router.ip)){ // only informs peer Routers
                 continue;
             }
             for (Map.Entry<Node, Integer> entryM : router.neighbors.entrySet()){
@@ -334,22 +336,6 @@ public class LinkStateRouter{
             advertiseLink(n.interf, ip1, ip2, cost);
         }
      }
-
-    /**
-     * Returns the next router/node in route to destination.
-     * Travels towards the root router from destination.
-     *
-     * @param current the current router in route from root to destination
-     */
-    public Node nextRouter(Node current){
-        if (current.ip.equals(router.ip)){
-            return router;
-        }
-        else if (current.prev.ip.equals(router.ip)){
-            return current;
-        }
-        return nextRouter(current.prev);
-    }
 
     /**
      * Handler for advertisement of link update to propagte the network
@@ -384,7 +370,7 @@ public class LinkStateRouter{
 
             // If link between nodes exists
             if (cost1 != null && cost2 != null){
-                if (cost1 != cost && cost2 != cost){ // different costs
+                if (cost1 != cost || cost2 != cost){ // different costs
                     if (cost != Integer.MAX_VALUE){ // change connection
                         Integer costInt = new Integer(cost);
                         
@@ -399,15 +385,31 @@ public class LinkStateRouter{
                     informPeers(interf, ip1, ip2, cost);
                 } // otherwise no change, ignore
             } else { // if no link exists, create link between both
-                if (cost != Integer.MAX_VALUE){
+                //if (cost != Integer.MAX_VALUE){
                     node1.addNeighbor(node2, cost);
                     node2.addNeighbor(node1, cost);
                     
                     dijkstra(router, fwdTable);
                     informPeers(interf, ip1, ip2, cost);
-                }
+                //}
             }
         }
+    }
+    
+    /**
+     * Returns the next router/node in route to destination.
+     * Travels towards the root router from destination.
+     *
+     * @param current the current router in route from root to destination
+     */
+    public Node nextRouter(Node current){
+        if (current.ip.equals(router.ip)){
+            return router;
+        }
+        else if (current.prev.ip.equals(router.ip)){
+            return current;
+        }
+        return nextRouter(current.prev);
     }
 
     /**
@@ -419,8 +421,8 @@ public class LinkStateRouter{
         if (dest == null){
             System.err.println("No path to host: " + ip2);
         } else if (dest.priority == Integer.MAX_VALUE){
-            System.err.println("No path to host: " + ip2 + " Priority = INT MAX");
-        } else if (dest.ip != router.ip){
+            System.err.println("No path to host: " + ip2);
+        } else if (!dest.ip.equals(router.ip)){
             Node next = nextRouter(dest);
             if (next.ip != router.ip){
                 System.out.println("1," + next.interf + "," + ip1 + "," + ip2
