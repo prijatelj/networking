@@ -1,6 +1,8 @@
 package router;
 
 import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.PriorityQueue; // This will need replaced w/ dijkstra opt. PQ
 
 /**
@@ -17,29 +19,35 @@ public class DijkstraSP{
      *
      * @param src the root of the algorithm and the resulting shortest path tree
      */
-    public static void dijkstra(Node src){
+    public static void dijkstra(Node src, HashMap<String, Node> verts){
         HashSet<Node> visited = new HashSet<>();
         PriorityQueue<Node> pq = new PriorityQueue<>();
 
         // Traverse graph, mark their priority as infinte & set prev = NULL
-        initialize(src, pq, visited);
-        
+        //initialize(src, pq, visited);
+        init(verts, pq);
+
         src.priority = 0;
         pq.add(src); // Necessary?
         
         int alt;
+        int cost;
+        Node neighbor, u;
 
         while(pq.peek() != null){
-            Node u = pq.poll();
+            u = pq.poll();
 
-            for (Edge e : u.neighbors){
-                alt = u.priority + e.cost;
+            for (Map.Entry<Node, Integer> entry : u.neighbors.entrySet()){
+                cost = entry.getValue().intValue();
+                neighbor = entry.getKey();
 
-                if (alt < e.to.priority){
-                    e.to.priority = alt;
-                    e.to.prev = u;
-                    pq.remove(e.to); // decrease priority
-                    pq.add(e.to);
+                alt = u.priority + cost;
+
+                if (alt < neighbor.priority){
+                    neighbor.priority = alt;
+                    neighbor.prev = u;
+                    pq.remove(neighbor); // decrease priority
+                    pq.add(neighbor);
                 }
             }
         }
@@ -58,9 +66,19 @@ public class DijkstraSP{
             visited.add(src);
             pq.add(src);
             
-            for (Edge e : src.neighbors){
-                initialize(e.to, pq, visited);
+            for (Node n : src.neighbors.keySet()){
+                initialize(n, pq, visited);
             }
+        }
+    }
+
+    private static void init(HashMap<String, Node> verts,
+            PriorityQueue<Node> pq){
+        for (Node tmp : verts.values()){
+            tmp.priority = Integer.MAX_VALUE;
+            tmp.prev = null;
+
+            pq.add(tmp);
         }
     }
 }
