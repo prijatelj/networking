@@ -385,13 +385,13 @@ public class LinkStateRouter{
                     informPeers(interf, ip1, ip2, cost);
                 } // otherwise no change, ignore
             } else { // if no link exists, create link between both
-                //if (cost != Integer.MAX_VALUE){
+                if (cost != Integer.MAX_VALUE){ // TODO Removal of this may fix bug?
                     node1.addNeighbor(node2, cost);
                     node2.addNeighbor(node1, cost);
                     
                     dijkstra(router, fwdTable);
                     informPeers(interf, ip1, ip2, cost);
-                //}
+                }
             }
         }
     }
