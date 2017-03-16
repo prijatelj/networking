@@ -343,18 +343,46 @@ public class LinkStateRouter{
      * Handler for advertisement of link update to propagte the network
      */
     public void handleAdvert(int interf, String ip1, String ip2, int cost){
-        Node node1 = fwdTable.get(ip1), node2 = fwdTable.get(ip2);
+        Node node1 = fwdTable.get(ip1);
+        Node node2 = fwdTable.get(ip2);
     
-        //*
-        // ip1 not known to graph
+        /*
+        // Check if ip's not known to graph
+        if (node1 == null){
+            node1 = new Node(-2, -2, ip1);
+            fwdTable.put(ip1, node1);
+        }
         if (node2 == null){
-            fwdTable.put();
+            node2 = new Node(-2, -2, ip2);
+            fwdTable.put(ip2, node2);
         }
 
-        // ip2 not known to graph
+        if (cost != Integer.MAX_VALUE){ 
+            node1.addNeighbor(node2, cost);// add || update link
+            node2.addNeighbor(node1, cost);
+
+            if ((node1.neighbors.get(node2) == null
+                    || node2.neighbors.get(node1) == null)
+                    || ( node1.neighbors.get(node2) != cost
+                    || node2.neighbors.get(node1) != cost)
+                    ){
+                dijkstra(router, fwdTable);
+                informPeers(interf, ip1, ip2, cost);
+            } // otherwise do nothing because cost is the same
+
+        } else if (cost == Integer.MAX_VALUE
+                && node1.neighbors.get(node2) != null
+                && node2.neighbors.get(node1) != null){
+            node1.removeNeighbor(node2);
+            node2.removeNeighbor(node1);
+
+            dijkstra(router, fwdTable);
+            informPeers(interf, ip1, ip2, cost);
+        }
+
         //*/
         
-        /*
+        //*
         if (node1 == null){ // add node to graph. redo DijkstraSP
             node1 = new Node(-2, -2, ip1);
             fwdTable.put(ip1, node1);
