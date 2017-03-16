@@ -19,9 +19,11 @@ public class LinkStateRouter{
 
     public LinkStateRouter(){
         router = new Node(1, -1,"127.0.0.1");
+        fwdTable.put("127.0.0.1", router);
     }
     public LinkStateRouter(Node router){
         this.router = router;
+        fwdTable.put(router.ip, router);
     }
 
     /**
@@ -342,7 +344,17 @@ public class LinkStateRouter{
      */
     public void handleAdvert(int interf, String ip1, String ip2, int cost){
         Node node1 = fwdTable.get(ip1), node2 = fwdTable.get(ip2);
+    
+        //*
+        // ip1 not known to graph
+        if (node2 == null){
+            fwdTable.put();
+        }
 
+        // ip2 not known to graph
+        //*/
+        
+        /*
         if (node1 == null){ // add node to graph. redo DijkstraSP
             node1 = new Node(-2, -2, ip1);
             fwdTable.put(ip1, node1);
@@ -394,6 +406,7 @@ public class LinkStateRouter{
                 }
             }
         }
+        //*/
     }
     
     /**
