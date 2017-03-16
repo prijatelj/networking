@@ -42,6 +42,10 @@ public class Node implements Comparable<Node>{
             neighbors.put(neighbor, cost);
         }
     }
+    
+    public Integer removeNeighbor(Node neighbor){
+        return neighbors.remove(neighbor);
+    }
 
     //* equal if have same ip address, cuz those should be unique.
     @Override
