@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Scanner;
 
+// The Swing Environment for key listeners & maximum portability:
+
 /**
  * Two player versus Spaceship Shooter in console. In the game you play as a
  * ship at the bottom of an 80 col by 80 row board and shoot at the opponent
@@ -46,13 +48,15 @@ public class Game{
         }
 
         protected void update(){
-            y += (direction) ? 1 : -1;
+            y += (direction) ? -1 : 1;
         }
 
         protected Missile missileAhead(ArrayList<Missile> ms){
             for (Missile m : ms){
-                if ((m.y == y+1 && direction && direction != m.direction)
-                    || (m.y == y-1 && !direction && direction != m.direction))
+                if ((m.x == x && m.y == y-1
+                    && direction && direction != m.direction)
+                    || (m.x == x && m.y == y+1
+                    && !direction && direction != m.direction))
                     return m;
             }
             return null;
@@ -61,7 +65,7 @@ public class Game{
 
     protected class Player extends Sprite{
         private static final int MAX_AMMO = 5;
-        private static final long RELOAD_TIME = (long)30000000000L; // 30 secs
+        private static final long RELOAD_TIME = (long)15000000000L; // 30 secs
         private ArrayList <Long> ammoTimer = new ArrayList<>();
         protected int id;
 
@@ -91,13 +95,13 @@ public class Game{
         }
 
         protected Missile shoot(){
-            if (ammoTimer.size() <= MAX_AMMO){
+            if (ammoTimer.size() < MAX_AMMO && missiles.size() < MAX_AMMO*2){
                 ammoTimer.add(System.nanoTime());
 
-                if (id == 'A')
-                    return new Missile('^', x, y+1, 1, true);
+                if (id == 1)
+                    return new Missile('^', x, y, 1, true);
                 else
-                    return new Missile('v', x, y-1, 1, false);
+                    return new Missile('v', x, y, 1, false);
             }
             return null;
         }
@@ -109,7 +113,7 @@ public class Game{
         protected Missile input(char in){
             if (in == 'a' && x > 0)
                 x--;
-            else if (in == 'd' && x < newBoard[0].length)
+            else if (in == 'd' && x < newBoard[0].length-1)
                 x++;
             else if (in == 's'){
                 return shoot();
@@ -187,15 +191,24 @@ public class Game{
                 tmp.sprite = '%';
         }
         
-
+        delete = new HashSet<>();
         for (Missile m : missiles){
             m.update();
+            if (m.y < 0 || m.y >= newBoard.length)
+                delete.add(m);
         }
-        for (Missile m : missiles){
-            if (m.isHit(m))
-                m.sprite = '%';
-            p1.isHit(m);
-            p2.isHit(m);
+        missiles.removeAll(delete);
+
+        for (int i = 0; i < missiles.size(); i++){
+            for (int j = 0; j < missiles.size(); j++){
+                if (i != j && missiles.get(i).isHit(missiles.get(j))){
+                    missiles.get(i).sprite = '%';
+                    break;
+                }
+            }
+            if (p1.isHit(missiles.get(i)) || p2.isHit(missiles.get(i))){
+                missiles.get(i).sprite = '%';
+            }
         }
 
         if (!p1.isAlive()){
@@ -235,8 +248,8 @@ public class Game{
             + String.format("%1$" + (newBoard[0].length-7) + "s", p2.hp
             + "    :HP\n");
 
-        score += "Ammo:  " + p1.ammo()
-            + String.format("%1$" + (newBoard[0].length-7) + "s", p2.ammo()
+        score += "Ammo:  " + p1.ammoCheck()
+            + String.format("%1$" + (newBoard[0].length-7) + "s", p2.ammoCheck()
             + "  :Ammo\n");
         
         score += ("p1(x,y) = (" + p1.x + "," + p1.y + ")")
@@ -266,18 +279,22 @@ public class Game{
             if (p1.sprite == 'X' && p2.sprite == 'X'){
                 screen += "Game Over: Tie Game!\n";
             } else if (p1.sprite == 'X'){
-                screen += "Game Over: Player " + p1.id + " Wins!\n";
-            } else if (p2.sprite == 'X'){
                 screen += "Game Over: Player " + p2.id + " Wins!\n";
+            } else if (p2.sprite == 'X'){
+                screen += "Game Over: Player " + p1.id + " Wins!\n";
             }
         }
 
+        //*  used for in terminal testing.
         output(screen);
-
-        return !gameOver;
+        return !gameOver; 
+        //*/
+        
+        //return screen; // Used for implementation with swing
     }
 
     //reset back to top of screen and output new screen
+    // Old code used for gameplay in actual terminal. Superceded by Swing
     protected void output(String screen){
         //*
         for (int i = 0; i < newBoard.length+7; i++){
@@ -331,7 +348,8 @@ public class Game{
 
     public static void main(String args[]){
         // create board, & 1 player
-        Game game = new Game(40, 80, 3, 'A', '1');
+        //Game game = new Game(40, 80, 3, 'A', '1');
+        Game game = new Game(20, 40, 3, 'A');
         
         Scanner sc = new Scanner(System.in);
         String in; 
@@ -345,8 +363,5 @@ public class Game{
         do {
             in = sc.nextLine();
         } while (game.render(in.charAt(0), in.charAt(1)));
-
-        for (int i = 0; i < game.newBoard.length; i++)
-            System.out.print(String.valueOf(game.newBoard[i]) + "\n");
     }
  }
