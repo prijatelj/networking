@@ -13,7 +13,7 @@ import java.util.Scanner;
  * 
  * @author Derek S. Prijatelj
  */
- public class TerminusGame{
+public class Game{
     private static class Sprite{
         protected int x, y, hp;
         protected char sprite; // serves as unique id
@@ -109,11 +109,11 @@ import java.util.Scanner;
         protected Missile input(char in){
             if (in == 'a' && x > 0)
                 x--;
-            else if (in == 'd' && x < newBoard.length)
+            else if (in == 'd' && x < newBoard[0].length)
                 x++;
-            else if (in == ' '){
+            else if (in == 's'){
                 return shoot();
-            } else if (in == 'e'){
+            } else if (in == 'x'){
                 // Character forfeits, self-destruct
                 sprite = 'X';
             }
@@ -123,22 +123,22 @@ import java.util.Scanner;
 
     
     //private int[][] board;
-    private char[][] newBoard, currentBoard;
+    protected char[][] newBoard, currentBoard;
     private Player p1, p2;
     private int hp;
     private ArrayList <Missile> missiles = new ArrayList<>();
 
-    public TerminusGame(int row, int col, int hp){
+    public Game(int row, int col, int hp){
         createBoard(row, col);
         this.hp = hp;
     }
 
-    public TerminusGame(int row, int col, int hp, char p1Sprite){
+    public Game(int row, int col, int hp, char p1Sprite){
         this(row, col, hp);
         this.p1 = new Player(p1Sprite, col/2, row-1, hp, 1);
     }
 
-    public TerminusGame(int row, int col, int hp, char p1Sprite, char p2Sprite){
+    public Game(int row, int col, int hp, char p1Sprite, char p2Sprite){
         this(row, col, hp);
         this.p1 = new Player(p1Sprite, col/2, row-1, hp, 1);
         this.p2 = new Player(p2Sprite, col/2, 0, hp, 2);
@@ -146,8 +146,10 @@ import java.util.Scanner;
 
     private void createBoard(int row, int col){
         newBoard = new char[row][col];
-        for (int i = 0; i < row-1; i++)
+        for (int i = 0; i < row; i++)
             newBoard[i] = String.format("%1$" + col + "s"," ").toCharArray();
+
+        currentBoard = new char[row][col];
     }
 
     protected void addPlayer(char sprite, boolean isPlayer1){
@@ -213,7 +215,8 @@ import java.util.Scanner;
      * Places active sprites on empty board, assumes update of sprites complete.
      */
     private void setSprites(){
-        currentBoard = Arrays.copyOf(newBoard, newBoard.length);
+        for (int i = 0; i < currentBoard.length; i++)
+            currentBoard[i] = Arrays.copyOf(newBoard[i], newBoard[i].length);
         
         currentBoard[p1.y][p1.x] = p1.sprite;
         currentBoard[p2.y][p2.x] = p2.sprite;
@@ -235,8 +238,11 @@ import java.util.Scanner;
         score += "Ammo:  " + p1.ammo()
             + String.format("%1$" + (newBoard[0].length-7) + "s", p2.ammo()
             + "  :Ammo\n");
-
-        return score + line();
+        
+        score += ("p1(x,y) = (" + p1.x + "," + p1.y + ")")
+            + ("  p2(x,y) = (" + p2.x + "," + p2.y + ")")
+            + "   board dim: " + newBoard.length + "," + newBoard[0].length + "\n";
+        return score;// + line();
     }
 
     /**
@@ -248,8 +254,11 @@ import java.util.Scanner;
 
         String screen = line();
 
-        for (int i = 0; i < currentBoard.length; i++)
-            screen += String.valueOf(currentBoard[i]) + "\n";
+        for (int i = 0; i < currentBoard.length; i++){
+            for (int j = 0; j < currentBoard[i].length; j++)
+                screen += currentBoard[i][j];
+            screen += "\n";
+        }
         
         screen += scoreBoard();
         
@@ -268,19 +277,24 @@ import java.util.Scanner;
         return !gameOver;
     }
 
+    //reset back to top of screen and output new screen
     protected void output(String screen){
-        // System.out.print(renderScreen(p1Input, p2Input));
-        // need to consistently overwrite the previous output!!!
-        // renderScreen could be only render and bool if gameover. So output
-        // @ end of renderScreen after making screen and return gameOver;
-        
-        //reset back to top of screen
-        System.out.printf("%" + newBoard[0].length + "s","\33[1a\r");
-        for (int i = 0; i < newBoard.length+6; i++){
-            System.out.print("\33[2k\33[1A\33[2k"); // may only work in linux if it even works...
+        //*
+        for (int i = 0; i < newBoard.length+7; i++){
+            System.out.print("\033[1A" +
+                String.format("%" + newBoard[0].length + "s", "") + "\r");
         }
+        //*/
 
-        System.out.print(screen);
+        // may only work in linux if it even works...
+        // \033[1A : reset up previous line
+        // \033[2k : apparently erases line... i doubt it.
+        /*
+        System.out.print("\033[" + (newBoard.length+7) + "A" + screen +
+            String.format("%" + newBoard[0].length + "s", "") + "\r");
+        */
+        System.out.print(screen
+            + String.format("%" + newBoard[0].length + "s", "") + "\r");
     }
 
     /**
@@ -317,7 +331,7 @@ import java.util.Scanner;
 
     public static void main(String args[]){
         // create board, & 1 player
-        TerminusGame game = new TerminusGame(40, 80, 3, 'A', '1');
+        Game game = new Game(40, 80, 3, 'A', '1');
         
         Scanner sc = new Scanner(System.in);
         String in; 
@@ -332,8 +346,7 @@ import java.util.Scanner;
             in = sc.nextLine();
         } while (game.render(in.charAt(0), in.charAt(1)));
 
-        // add player 2
-
-        // test input and render
+        for (int i = 0; i < game.newBoard.length; i++)
+            System.out.print(String.valueOf(game.newBoard[i]) + "\n");
     }
  }
