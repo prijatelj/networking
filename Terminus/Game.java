@@ -65,7 +65,7 @@ public class Game{
 
     protected class Player extends Sprite{
         private static final int MAX_AMMO = 5;
-        private static final long RELOAD_TIME = (long)15000000000L; // 30 secs
+        private static final long RELOAD_TIME = (long)10000000000L; // 30 secs
         private ArrayList <Long> ammoTimer = new ArrayList<>();
         protected int id;
 
@@ -128,7 +128,7 @@ public class Game{
     
     //private int[][] board;
     protected char[][] newBoard, currentBoard;
-    private Player p1, p2;
+    protected Player p1, p2;
     private int hp;
     private ArrayList <Missile> missiles = new ArrayList<>();
 
@@ -251,17 +251,21 @@ public class Game{
         score += "Ammo:  " + p1.ammoCheck()
             + String.format("%1$" + (newBoard[0].length-7) + "s", p2.ammoCheck()
             + "  :Ammo\n");
-        
+        /* 
         score += ("p1(x,y) = (" + p1.x + "," + p1.y + ")")
             + ("  p2(x,y) = (" + p2.x + "," + p2.y + ")")
             + "   board dim: " + newBoard.length + "," + newBoard[0].length + "\n";
+        */
         return score;// + line();
     }
 
     /**
      * Returns String representation of current board & game state
      */
-    private boolean render(char p1Input, char p2Input){
+    protected String render(char p1Input, char p2Input){
+        if (p2 == null){
+            return standby(true);
+        }
         boolean gameOver = updateSprites(p1Input, p2Input);
         setSprites();
 
@@ -279,18 +283,18 @@ public class Game{
             if (p1.sprite == 'X' && p2.sprite == 'X'){
                 screen += "Game Over: Tie Game!\n";
             } else if (p1.sprite == 'X'){
-                screen += "Game Over: Player " + p2.id + " Wins!\n";
+                screen += "Game Over: Player " + p2.id + " Wins!";
             } else if (p2.sprite == 'X'){
-                screen += "Game Over: Player " + p1.id + " Wins!\n";
+                screen += "Game Over: Player " + p1.id + " Wins!";
             }
         }
 
-        //*  used for in terminal testing.
+        /*  used for in terminal testing.
         output(screen);
         return !gameOver; 
         //*/
         
-        //return screen; // Used for implementation with swing
+        return screen; // Used for implementation with swing
     }
 
     //reset back to top of screen and output new screen
@@ -317,7 +321,7 @@ public class Game{
     /**
      * Standby Screen, waiting for other player to join
      */
-    protected void standby(boolean isPlayer1){
+    protected String standby(boolean isPlayer1){
         String screen = line();
 
         for (int row = 0; row < newBoard.length; row++ ){
@@ -332,8 +336,10 @@ public class Game{
         
         screen += "\nYou are Player " + ((isPlayer1) ? "1" : "2") + "\n\n";
 
-        // output screen
-        System.out.print(screen+line());
+        screen += line();
+
+        //System.out.print(screen);
+        return screen;
     }
 
     private String line(){
@@ -346,9 +352,10 @@ public class Game{
         return str + "\n";
     }
 
+    /*
     public static void main(String args[]){
         // create board, & 1 player
-        //Game game = new Game(40, 80, 3, 'A', '1');
+        // Game game = new Game(40, 80, 3, 'A', '1');
         Game game = new Game(20, 40, 3, 'A');
         
         Scanner sc = new Scanner(System.in);
@@ -364,4 +371,5 @@ public class Game{
             in = sc.nextLine();
         } while (game.render(in.charAt(0), in.charAt(1)));
     }
+    //*/
  }
