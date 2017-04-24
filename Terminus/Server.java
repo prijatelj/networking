@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.lang.InterruptedException;
 import java.lang.Math;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -83,38 +84,56 @@ public class Server{
             //player2.read(buf2); // may block and may be problem.
 
             game.addPlayer('V', false);
+            
+            buf1 = ByteBuffer.allocate(4);
+            buf2 = ByteBuffer.allocate(4);
+            
+            // inform player1 of player2's joining
+            buf1.putChar('p');
+            buf1.putChar('2');
+            buf1.flip();
+            while(buf1.hasRemaining()) 
+                player1.write(buf1);
+            buf1.clear();
 
             // begin game loop
-            long turnTime = 50000000, lastTime = System.nanoTime();
+            //long turnTime = 250000000L, lastTime = System.nanoTime();
+            long turnTime = 20000000L, lastTime = System.nanoTime();
             boolean inPlay = true;
             Character p1In, p2In;
             player1.configureBlocking(false);
             player2.configureBlocking(false);
             
-            buf1 = ByteBuffer.allocate(4);
-            buf2 = ByteBuffer.allocate(4);
 
         System.out.println("Game begin:");
             
+            bytes1 = 0;
+            bytes2 = 0;
+            
+            Thread.sleep(1000); // Wait for the clients to create thier games
+
             while (inPlay){
-                bytes1 = player1.read(buf1);
+                bytes1 += player1.read(buf1);
                 buf1.position(0);
 
-                bytes2 = player2.read(buf2);
+                bytes2 += player2.read(buf2);
                 buf2.position(0);
 
                 // accept input from both players if any (non-blocking)
                 if (System.nanoTime() - lastTime > turnTime){
+        //System.out.println("bytes1 = " + bytes1 + ", bytes2 = " + bytes2);
                     
-                    p1In = buf1.getChar();
-                    p2In = buf2.getChar();
-                    
-                    // send moves to both players
                     if (bytes1 <= 0){ // No activity, therefore lost connection
                         p1In = 'x';
+                    } else {
+                        bytes1 = 0;
+                        p1In = buf1.getChar(0);
                     }
                     if (bytes2 <= 0 ){ // No activity, therefore lost connection
                         p2In = 'x';
+                    } else {
+                        bytes2 = 0;
+                        p2In = buf2.getChar(0);
                     }
                     
                     buf1.clear();
@@ -137,16 +156,15 @@ public class Server{
                     buf1.clear();
                     buf2.clear();
 
-                    inPlay = game.render(p1In, p2In).endsWith("Wins!");
-                } else {
-                 inPlay = player1.isConnected() && player2.isConnected();
+                    inPlay = !game.render(p1In, p2In).endsWith("Wins!");
+                    lastTime = System.nanoTime();
                 }
             }
 
             player1.close();
             player2.close();
             serv.close();
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
