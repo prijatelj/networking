@@ -35,7 +35,7 @@ public class Client extends Application{
     private static Game game; // client-side game
     private static Character p1In = '0', p2In = '0', in = '0';
     private static String gameRender;
-    private static final int frameDiv = 15; // divides framerate by this amount
+    private static final int frameDiv = 1; // divides framerate by this amount
     private static int frameCount = 0;
     
     private static ByteBuffer buf = ByteBuffer.allocate(16);

@@ -96,10 +96,11 @@ public class Server{
             while(buf1.hasRemaining()) 
                 player1.write(buf1);
             buf1.clear();
+            buf1 = ByteBuffer.allocate(4);
 
             // begin game loop
             //long turnTime = 20000000L, lastTime = System.nanoTime();
-            long turnTime = 20000000L, lastTime = System.nanoTime();
+            long turnTime = 50000000L, lastTime = System.nanoTime();
             boolean inPlay = true, timeUp1 = false, timeUp2 = false;
             String gameRender = "";
             Character p1In, p2In;
@@ -112,14 +113,30 @@ public class Server{
             bytes1 = 0;
             bytes2 = 0;
 
-            Thread.sleep(1000); // Wait for the clients to create thier games
+            Thread.sleep(2000); // Wait for the clients to create thier games
+
+            char old1 = '0', old2 = '0';
 
             while (inPlay){
+                old1 = buf1.getChar();
+                buf1.position(0);
                 bytes1 += player1.read(buf1);
                 buf1.position(0);
+                if (buf1.getChar() == '0' && old1 != '0'){
+                    buf1.position(0);
+                    buf1.putChar(old1);
+                }
+                    buf1.position(0);
 
+                old2 = buf2.getChar();
+                buf2.position(0);
                 bytes2 += player2.read(buf2);
                 buf2.position(0);
+                if (buf2.getChar() == '0' && old2 != '0'){
+                    buf2.position(0);
+                    buf2.putChar(old2);
+                }
+                    buf2.position(0);
 
                 // accept input from both players if any (non-blocking)
                 if (System.nanoTime() - lastTime > turnTime){
@@ -160,11 +177,16 @@ public class Server{
                     gameRender = game.render(p1In, p2In);
                     inPlay = !(gameRender.endsWith("Win!")
                         || gameRender.endsWith("Wins!"));
+
+                    old1 = '0';
+                    old2 = '0';
+                    buf1 = ByteBuffer.allocate(4);
+                    buf2 = ByteBuffer.allocate(4);
                     lastTime = System.nanoTime();
                 }
             }
 
-            Thread.sleep(1000);
+            Thread.sleep(2000);
 
             player1.close();
             player2.close();
