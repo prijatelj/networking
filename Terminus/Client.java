@@ -1,6 +1,4 @@
 import java.io.IOException;
-import java.lang.ArrayIndexOutOfBoundsException;
-import java.lang.Math;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -195,6 +193,12 @@ public class Client extends Application{
     }
 
     private static void terminate(){
+        try{
+            client.close();
+        } catch (IOException e){
+            e.printStackTrace();
+            terminate();
+        }
         Platform.exit();
     }
 

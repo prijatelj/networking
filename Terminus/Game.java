@@ -35,8 +35,9 @@ public class Game{
 
     private static class Missile extends Sprite{
         private boolean direction; // true = up
-        private int dmg = 1;
-        private int speed = 1;
+        private int dmg = 1, speedStep = 0;
+        private final Long travelDelay = 150000000L;
+        private long startTime;
 
         public Missile(char sprite, int x, int y, int hp, boolean direction){
             //Sprite(sprite, x, y, hp);
@@ -45,10 +46,15 @@ public class Game{
             this.y = y;
             this.hp = hp;
             this.direction = direction;
+            this.startTime = System.nanoTime();
         }
 
         protected void update(){
-            y += (direction) ? -1 : 1;
+            if (Math.floor((System.nanoTime() - startTime) / travelDelay)
+                    >= speedStep ){
+                y += (direction) ? -1 : 1;
+                speedStep++;
+            }
         }
 
         protected Missile missileAhead(ArrayList<Missile> ms){
@@ -65,7 +71,7 @@ public class Game{
 
     protected class Player extends Sprite{
         private static final int MAX_AMMO = 5;
-        private static final long RELOAD_TIME = (long)10000000000L; // 30 secs
+        private static final long RELOAD_TIME = (long)4000000000L;
         private ArrayList <Long> ammoTimer = new ArrayList<>();
         protected int id;
 
