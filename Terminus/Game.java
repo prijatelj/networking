@@ -334,7 +334,7 @@ public class Game{
 
         for (int row = 0; row < newBoard.length; row++ ){
             if (row == newBoard.length/2){
-                screen += String.format("%1$"+ ((newBoard[0].length/2) - 5)
+                screen += String.format("%1$"+ ((newBoard[0].length/2))
                     + "s","Waiting for Opponent");
             }
             screen += "\n";
@@ -342,7 +342,9 @@ public class Game{
         
         screen += line();
         
-        screen += "\nYou are Player " + ((isPlayer1) ? "1" : "2") + "\n\n";
+        screen += "'a': move left,'d': move right";
+        screen += "\n's': shoot, 'esc': quit";
+        screen += "\n'x': self-destruct/forfeit\n";
 
         screen += line();
 
