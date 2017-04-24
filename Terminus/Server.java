@@ -100,6 +100,7 @@ public class Server{
             //long turnTime = 250000000L, lastTime = System.nanoTime();
             long turnTime = 20000000L, lastTime = System.nanoTime();
             boolean inPlay = true;
+            String gameRender = "";
             Character p1In, p2In;
             player1.configureBlocking(false);
             player2.configureBlocking(false);
@@ -109,7 +110,7 @@ public class Server{
             
             bytes1 = 0;
             bytes2 = 0;
-            
+
             Thread.sleep(1000); // Wait for the clients to create thier games
 
             while (inPlay){
@@ -135,7 +136,7 @@ public class Server{
                         bytes2 = 0;
                         p2In = buf2.getChar(0);
                     }
-                    
+
                     buf1.clear();
                     buf2.clear();
 
@@ -155,11 +156,14 @@ public class Server{
                     
                     buf1.clear();
                     buf2.clear();
-
-                    inPlay = !game.render(p1In, p2In).endsWith("Wins!");
+                    gameRender = game.render(p1In, p2In);
+                    inPlay = !(gameRender.endsWith("Win!")
+                        || gameRender.endsWith("Wins!"));
                     lastTime = System.nanoTime();
                 }
             }
+
+            Thread.sleep(1000);
 
             player1.close();
             player2.close();

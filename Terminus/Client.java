@@ -31,11 +31,11 @@ import javafx.stage.Screen;
  * @author Derek S. Prijatelj
  */
 public class Client extends Application{
-    final float WIDTH = 400, HEIGHT = 500;
+    final float WIDTH = 400, HEIGHT = 475;
     private static Game game; // client-side game
     private static Character p1In = '0', p2In = '0', in = '0';
     private static String gameRender;
-    private static final int frameDiv = 30; // divides framerate by this amount
+    private static final int frameDiv = 15; // divides framerate by this amount
     private static int frameCount = 0;
     
     private static ByteBuffer buf = ByteBuffer.allocate(16);
@@ -77,7 +77,8 @@ public class Client extends Application{
                     terminate();
                 }
                 
-                if (gameRender.endsWith("Wins!")){
+                if (gameRender.endsWith("Win!")
+                        || gameRender.endsWith("Wins!")){
                     stop();
                     System.out.println(gameRender.substring(
                         gameRender.lastIndexOf("\n") + 1));

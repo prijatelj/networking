@@ -241,8 +241,8 @@ public class Game{
     private String scoreBoard(){
         String score = line();
 
-        score += "Player 1"
-            +String.format("%1$" + (newBoard[0].length-7) + "s", "Player 2\n");
+        score += "Your Stats"
+            +String.format("%1$" + (newBoard[0].length-9) + "s", "Opponent\n");
         
         score += "HP:    " + p1.hp
             + String.format("%1$" + (newBoard[0].length-7) + "s", p2.hp
@@ -256,7 +256,7 @@ public class Game{
             + ("  p2(x,y) = (" + p2.x + "," + p2.y + ")")
             + "   board dim: " + newBoard.length + "," + newBoard[0].length + "\n";
         */
-        return score;// + line();
+        return score + line();
     }
 
     /**
@@ -283,9 +283,11 @@ public class Game{
             if (p1.sprite == 'X' && p2.sprite == 'X'){
                 screen += "Game Over: Tie Game!\n";
             } else if (p1.sprite == 'X'){
-                screen += "Game Over: Player " + p2.id + " Wins!";
+                //screen += "Game Over: Player " + p2.id + " Wins!";
+                screen += "Game Over: Your Opponent Wins!";
             } else if (p2.sprite == 'X'){
-                screen += "Game Over: Player " + p1.id + " Wins!";
+                //screen += "Game Over: Player " + p1.id + " Wins!";
+                screen += "Game Over: You Win!";
             }
         }
 
