@@ -4,6 +4,7 @@ import java.lang.Math;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.SelectorProvider;
@@ -33,13 +34,13 @@ public class Server{
             // establish game settings
             Game game = new Game(boardHeight, boardWidth, hp);
 
-        System.out.println("Game board made,");
+            System.out.println("Game board made,");
 
             // Need to handle if player 1 leaves while in queue.
             SocketChannel player1 = serv.accept();
             ByteBuffer buf1 = ByteBuffer.allocate(16);
         
-        System.out.println("Player 1 connected, bufs made");
+            System.out.println("Player 1 connected, bufs made");
 
             buf1.putInt(boardHeight);
             buf1.putInt(boardWidth);
@@ -48,12 +49,12 @@ public class Server{
 
             buf1.flip();
         
-        System.out.println("Bufs 1 filled");
+            System.out.println("Bufs 1 filled");
             
             while(buf1.hasRemaining())
                 bytes1 = player1.write(buf1);
         
-        System.out.println("player1 written to. Bytes = " + bytes1);
+            System.out.println("player1 written to. Bytes = " + bytes1);
 
             buf1.clear();
             //player1.read(buf1); // may block and may be problem.
@@ -64,7 +65,7 @@ public class Server{
             SocketChannel player2 = serv.accept();
             ByteBuffer buf2 = ByteBuffer.allocate(16);
 
-        System.out.println("Player 2 connected, bufs made");
+            System.out.println("Player 2 connected, bufs made");
 
             buf2.putInt(boardHeight);
             buf2.putInt(boardWidth);
@@ -73,12 +74,12 @@ public class Server{
 
             buf2.flip();
 
-        System.out.println("Bufs 2 filled");
+            System.out.println("Bufs 2 filled");
 
             while(buf2.hasRemaining()) 
                 bytes2 = player2.write(buf2);
 
-        System.out.println("player2 written to. Bytes = " + bytes2);
+            System.out.println("player2 written to. Bytes = " + bytes2);
 
             buf2.clear();
             //player2.read(buf2); // may block and may be problem.
@@ -97,16 +98,16 @@ public class Server{
             buf1.clear();
 
             // begin game loop
-            //long turnTime = 250000000L, lastTime = System.nanoTime();
+            //long turnTime = 20000000L, lastTime = System.nanoTime();
             long turnTime = 20000000L, lastTime = System.nanoTime();
-            boolean inPlay = true;
+            boolean inPlay = true, timeUp1 = false, timeUp2 = false;
             String gameRender = "";
             Character p1In, p2In;
             player1.configureBlocking(false);
             player2.configureBlocking(false);
             
 
-        System.out.println("Game begin:");
+            System.out.println("Game begin:");
             
             bytes1 = 0;
             bytes2 = 0;
@@ -122,16 +123,16 @@ public class Server{
 
                 // accept input from both players if any (non-blocking)
                 if (System.nanoTime() - lastTime > turnTime){
-        //System.out.println("bytes1 = " + bytes1 + ", bytes2 = " + bytes2);
-                    
                     if (bytes1 <= 0){ // No activity, therefore lost connection
                         p1In = 'x';
+                        timeUp1 = true;
                     } else {
                         bytes1 = 0;
                         p1In = buf1.getChar(0);
                     }
                     if (bytes2 <= 0 ){ // No activity, therefore lost connection
                         p2In = 'x';
+                        timeUp2 = true;
                     } else {
                         bytes2 = 0;
                         p2In = buf2.getChar(0);
@@ -149,9 +150,9 @@ public class Server{
                     buf1.flip();
                     buf2.flip();
 
-                    while(buf1.hasRemaining())
+                    while(!timeUp1 && buf1.hasRemaining())
                         player1.write(buf1);
-                    while(buf2.hasRemaining())
+                    while(!timeUp2 && buf2.hasRemaining())
                         player2.write(buf2);
                     
                     buf1.clear();

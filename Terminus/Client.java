@@ -1,7 +1,9 @@
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SocketChannel;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -39,6 +41,7 @@ public class Client extends Application{
     private static ByteBuffer buf = ByteBuffer.allocate(16);
     private static SocketChannel client;
     private static long bread = 0;
+    private static boolean gameOver = false, forfeit = false;
     
     @Override
     public void start(Stage stage) throws Exception{
@@ -46,7 +49,6 @@ public class Client extends Application{
             frameCount = 0;
         }
         frameCount++;
-
 
         VBox body = new VBox();
         body.setAlignment(Pos.CENTER);
@@ -56,14 +58,6 @@ public class Client extends Application{
             + "-fx-alignment: CENTER;"
         ));
 
-        // TODO Figure out how to get this the game String correctly & allow
-        //  For proper updates via server's input.
-        /*
-        Text gameText = new Text(game.render(p1In, p2In));
-        gameText.setFill(Color.WHITE);
-        body.getChildren().addAll(gameText);
-        resetInput();
-        */ 
         new AnimationTimer(){
             public void handle(long currentTime){
                 body.getChildren().clear();
@@ -80,10 +74,14 @@ public class Client extends Application{
                     stop();
                     System.out.println(gameRender.substring(
                         gameRender.lastIndexOf("\n") + 1));
+                    gameOver = true;
                     try{
                         client.close();
                     } catch (IOException e){
                         e.printStackTrace();
+                        terminate();
+                    }
+                    if (forfeit) {
                         terminate();
                     }
                 }
@@ -172,8 +170,12 @@ public class Client extends Application{
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             public void handle(KeyEvent key){
                 if (key.getCode() == KeyCode.ESCAPE){
-                    key.consume();
-                    terminate();
+                    in = 'x';
+                    if (gameOver){
+                        terminate();
+                    } else {
+                        forfeit = true;
+                    }
                 } else if (key.getCode() == KeyCode.A) {
                     in = 'a';
                 } else if (key.getCode() == KeyCode.S) {
@@ -188,16 +190,26 @@ public class Client extends Application{
                     game.addPlayer('V', false);
                 }
                 */
+                key.consume();
             }
         });
     }
 
     private static void terminate(){
         try{
+            if (gameOver){
+                // write to server
+                buf.clear();
+                buf.putChar('x');
+                buf.flip();
+                while(buf.hasRemaining())
+                    client.write(buf);
+            }
             client.close();
+        } catch(ClosedChannelException e){
+            // ensuring its closed is all.
         } catch (IOException e){
             e.printStackTrace();
-            terminate();
         }
         Platform.exit();
     }
@@ -263,6 +275,10 @@ public class Client extends Application{
                 Application.launch(Client.class, args);
             }
             client.close();
+        } catch(ConnectException e){
+            System.err.println("Cannot connect to host '" + hostName 
+                + "' at port " + port);
+            System.exit(1);
         } catch(Exception e){
             e.printStackTrace();
             System.exit(1);
